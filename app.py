@@ -16,7 +16,8 @@ from src.backtester.engine import BacktesterEngine
 from src.risk.manager import RiskParameters
 from src.utils.helpers import format_currency, format_percentage
 from src.visualization.charts import ChartGenerator
-from src.visualization.tradingview_charts import create_tradingview_component
+from src.visualization.tradingview_enhanced import create_enhanced_tradingview_chart, create_fallback_chart
+from src.visualization.plotly_professional import create_professional_plotly_chart
 
 def get_icon(name: str) -> str:
     """Función simple para iconos Unicode limpios"""
@@ -387,6 +388,60 @@ def run_backtest(symbol, start_date, end_date, interval, initial_capital,
                 risk_params=risk_params
             )
             
+            # Debug información de señales
+            if hasattr(strategy, 'debug_info') and strategy.debug_info:
+                with st.expander(f"{get_icon('debug')} 🔍 Debug Info - Análisis de Señales", expanded=False):
+                    debug_info = strategy.debug_info[-15:]  # Últimas 15 entradas
+                    for info in debug_info:
+                        if info['type'] == 'signal':
+                            signal_color = "🟢" if info['signal_type'] == 'BUY' else "🔴"
+                            st.success(f"{signal_color} **{info['signal_type']}** - {info['timestamp']} | Precio: ${info['price']:.4f} | Confianza: {info['confidence']:.2%}")
+                            st.code(f"Razón: {info['reason']}")
+                        elif info['type'] == 'analysis':
+                            st.info(f"📊 **Análisis** - {info['timestamp']} | Precio: ${info['price']:.4f}")
+                            st.code(f"EMAs: Fast={info.get('ema_fast', 0):.4f}, Med={info.get('ema_medium', 0):.4f}, Slow={info.get('ema_slow', 0):.4f}")
+                            st.code(f"Alineación: Bull={info.get('bullish', False)}, Bear={info.get('bearish', False)}, Posición={info.get('position', 'None')}")
+                            if 'cross_info' in info:
+                                st.code(f"Cruce detectado: {info['cross_info']}")
+            
+            # Información detallada de trades ejecutados
+            if len(results.trades) > 0:
+                with st.expander(f"{get_icon('trades')} 📊 Trades Ejecutados - Detalle de Señales", expanded=False):
+                    st.info(f"Total de trades: {len(results.trades)} | Verifique que las señales aparezcan en los momentos correctos del gráfico")
+                    
+                    for i, trade in enumerate(results.trades[:8]):  # Mostrar primeros 8 trades
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            side_emoji = "🟢 ▲" if trade.side.lower() == 'long' else "🔴 ▼"
+                            st.write(f"**{side_emoji} Trade #{i+1}**")
+                            st.write(f"Tipo: **{trade.side.upper()}**")
+                        with col2:
+                            st.write(f"**📅 Entrada**")
+                            st.write(f"{trade.entry_time.strftime('%m/%d %H:%M')}")
+                            st.write(f"**${trade.entry_price:.4f}**")
+                        with col3:
+                            if trade.exit_time and trade.exit_price:
+                                st.write(f"**🏁 Salida**")
+                                st.write(f"{trade.exit_time.strftime('%m/%d %H:%M')}")
+                                st.write(f"**${trade.exit_price:.4f}**")
+                            else:
+                                st.write("**⏳ Abierto**")
+                        with col4:
+                            if trade.pnl is not None:
+                                pnl_emoji = "💚 +" if trade.pnl > 0 else "❌ -"
+                                pnl_pct = ((trade.exit_price / trade.entry_price - 1) * 100) if trade.exit_price else 0
+                                st.write(f"**📊 P&L**")
+                                st.write(f"{pnl_emoji}${abs(trade.pnl):.2f}")
+                                st.write(f"({pnl_pct:+.1f}%)")
+                        
+                        st.divider()
+                    
+                    if len(results.trades) > 8:
+                        st.info(f"Mostrando primeros 8 de {len(results.trades)} trades totales")
+            
+            # Mostrar información de trades generados
+            st.success(f"📊 **Análisis Completo:** {len(results.trades)} trades ejecutados | Señales visibles en el gráfico")
+            
             # Guardar resultados en session state
             st.session_state.results = results
             st.session_state.strategy_name = strategy.get_strategy_name()
@@ -609,6 +664,15 @@ def show_trading_signals_chart(results, strategy_name, symbol):
         # Controles de configuración del gráfico
         st.markdown("### ⚙️ Configuración del Gráfico")
         
+        # Selector de tipo de gráfico
+        chart_type = st.radio(
+            "📊 Tipo de Gráfico:",
+            ["TradingView Style", "Plotly Profesional", "Plotly Avanzado"],
+            index=1,  # Plotly Profesional por defecto
+            horizontal=True,
+            help="📊 TradingView: Gráfico web interactivo | 📈 Plotly Pro: Estilo TradingView offline | 📊 Plotly Avanzado: Análisis multi-panel"
+        )
+        
         col1, col2, col3, col4 = st.columns(4)
         with col1:
             show_volume = st.checkbox("📊 Mostrar Volumen", value=True)
@@ -697,20 +761,52 @@ def show_trading_signals_chart(results, strategy_name, symbol):
                 data['rsi'] = 100 - (100 / (1 + rs))
                 indicators['rsi'] = data['rsi']
             
-            # Crear el gráfico profesional
-            fig = generator.create_professional_trading_chart(
-                data=data,
-                trades=results.trades,
-                indicators=indicators,
-                symbol=symbol,
-                timeframe=timeframe,
-                show_volume=show_volume,
-                show_trade_lines=show_trade_lines,
-                show_levels=show_levels,
-                chart_style=chart_style
-            )
-            
-            st.plotly_chart(fig, use_container_width=True)
+            # Renderizar gráfico según el tipo seleccionado
+            if chart_type == "TradingView Style":
+                # Intentar usar TradingView Chart mejorado
+                try:
+                    create_enhanced_tradingview_chart(
+                        data=data,
+                        trades=results.trades,
+                        indicators=indicators,
+                        symbol=symbol
+                    )
+                except Exception as e:
+                    st.error(f"Error con TradingView: {str(e)}")
+                    st.info("🔄 Usando gráfico de fallback...")
+                    create_fallback_chart(
+                        data=data,
+                        trades=results.trades,
+                        indicators=indicators,
+                        symbol=symbol
+                    )
+            elif chart_type == "Plotly Profesional":
+                # Usar Plotly Profesional (estilo TradingView)
+                create_professional_plotly_chart(
+                    data=data,
+                    trades=results.trades,
+                    indicators=indicators,
+                    symbol=symbol
+                )
+            else:
+                # Usar Plotly Avanzado
+                from src.visualization.advanced_charts import AdvancedChartGenerator
+                generator = AdvancedChartGenerator()
+                
+                # Crear el gráfico profesional
+                fig = generator.create_professional_trading_chart(
+                    data=data,
+                    trades=results.trades,
+                    indicators=indicators,
+                    symbol=symbol,
+                    timeframe=timeframe,
+                    show_volume=show_volume,
+                    show_trade_lines=show_trade_lines,
+                    show_levels=show_levels,
+                    chart_style=chart_style
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
             
             # Información del gráfico generado
             with st.expander(f"{get_icon('chart')} Detalles del Gráfico"):
@@ -725,10 +821,24 @@ def show_trading_signals_chart(results, strategy_name, symbol):
                     st.metric(f"{get_icon('red')} Short Trades", short_trades)
                 with col3:
                     st.metric(f"{get_icon('time')} Timeframe", timeframe.upper())
-                    st.metric(f"{get_icon('signal')} Fuente", "Real API" if use_real_data else "Sintético")
+                    if chart_type == "TradingView Style":
+                        chart_display = "📊 TradingView"
+                    elif chart_type == "Plotly Profesional":
+                        chart_display = "📈 Plotly Pro"
+                    else:
+                        chart_display = "� Plotly Avanzado"
+                    st.metric(f"{get_icon('chart')} Tipo Gráfico", chart_display)
                 
                 # Mostrar rango de datos
                 st.info(f"{get_icon('calendar')} Rango: {data.index[0].strftime('%Y-%m-%d %H:%M')} → {data.index[-1].strftime('%Y-%m-%d %H:%M')}")
+                
+                # Información específica según tipo de gráfico
+                if chart_type == "TradingView Style":
+                    st.success("🎯 **TradingView:** Gráfico profesional con candlesticks interactivos, zoom avanzado y herramientas de trading integradas.")
+                elif chart_type == "Plotly Profesional":
+                    st.success("📈 **Plotly Profesional:** Gráfico estilo TradingView usando Plotly, completamente offline con señales y análisis profesional.")
+                else:
+                    st.success("📊 **Plotly Avanzado:** Gráfico multi-panel con análisis técnico detallado y métricas de performance.")
         
         # Gráfico de análisis de performance
         st.markdown(f"### {get_icon('trending')} Análisis de Performance")

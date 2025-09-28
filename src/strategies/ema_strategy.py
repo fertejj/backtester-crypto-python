@@ -45,6 +45,9 @@ class EMAStrategy(BaseStrategy):
         self.exit_on_cross = exit_on_cross  # Salir en cruce contrario
         self.trailing_stop = trailing_stop  # Usar trailing stop
         
+        # Sistema de debug mejorado
+        self.debug_info = []
+        
     def generate_signals(self, data: pd.DataFrame) -> List[TradeSignal]:
         """Genera señales basadas en EMAs múltiples"""
         if not self.validate_data(data):
@@ -91,6 +94,28 @@ class EMAStrategy(BaseStrategy):
             price_cross_below_fast = (previous['close'] >= previous['ema_fast'] and 
                                      current_price < current['ema_fast'])
             
+            # Debug: Registrar información de análisis cada 20 barras
+            if i % 20 == 0 or price_cross_above_fast or price_cross_below_fast:
+                debug_entry = {
+                    'type': 'analysis',
+                    'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                    'price': current_price,
+                    'ema_fast': current['ema_fast'],
+                    'ema_medium': current['ema_medium'],
+                    'ema_slow': current['ema_slow'],
+                    'bullish': bullish_alignment,
+                    'bearish': bearish_alignment,
+                    'position': position,
+                    'price_cross_above': price_cross_above_fast,
+                    'price_cross_below': price_cross_below_fast,
+                    'strong_bull_trend': strong_bullish_trend,
+                    'strong_bear_trend': strong_bearish_trend
+                }
+                if price_cross_above_fast or price_cross_below_fast:
+                    debug_entry['cross_info'] = f"Precio cruzó {'ARRIBA' if price_cross_above_fast else 'ABAJO'} de EMA rápida"
+                    
+                self.debug_info.append(debug_entry)
+            
             # SEÑALES LONG
             if (self.allow_longs and position != 'long' and price_cross_above_fast):
                 # Condiciones para entrada LONG
@@ -113,6 +138,18 @@ class EMAStrategy(BaseStrategy):
                     )
                     signals.append(signal)
                     position = 'long'
+                    
+                    # Debug: Registrar la señal
+                    self.debug_info.append({
+                        'type': 'signal',
+                        'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                        'signal_type': 'BUY',
+                        'price': current_price,
+                        'confidence': confidence,
+                        'reason': signal.reason,
+                        'alignment_score': alignment_score,
+                        'strength_score': strength_score
+                    })
             
             # SEÑALES SHORT
             elif (self.allow_shorts and position != 'short' and price_cross_below_fast):
@@ -136,6 +173,18 @@ class EMAStrategy(BaseStrategy):
                     )
                     signals.append(signal)
                     position = 'short'
+                    
+                    # Debug: Registrar la señal
+                    self.debug_info.append({
+                        'type': 'signal',
+                        'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                        'signal_type': 'SELL',
+                        'price': current_price,
+                        'confidence': confidence,
+                        'reason': signal.reason,
+                        'alignment_score': alignment_score,
+                        'strength_score': strength_score
+                    })
             
             # SALIDAS
             elif position == 'long':
