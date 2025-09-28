@@ -35,7 +35,30 @@ def get_icon(name: str) -> str:
         "warning": "⚠",
         "calendar": "📅",
         "globe": "🌐",
-        "dollar": "💰"
+        "dollar": "💰",
+        "target": "🎯",
+        "time": "⏱",
+        "signal": "📡",
+        "config": "⚙",
+        "advanced": "🔧",
+        "search": "🔍",
+        "debug": "🐛",
+        "green": "🟢",
+        "red": "🔴",
+        "book": "📚",
+        "success": "✅",
+        "triangle": "△",
+        "dice": "🎲",
+        "link": "🔗",
+        "eye": "👁",
+        "arrow_up": "↑",
+        "arrow_down": "↓",
+        "circle": "●",
+        "star": "⭐",
+        "fire": "🔥",
+        "rocket": "🚀",
+        "gem": "💎",
+        "crown": "👑"
     }
     return icons.get(name, "•")
 
@@ -84,17 +107,17 @@ def main():
         )
         
         if use_real_data:
-            st.info("▸ Usando API real de BingX")
+            st.info(f"{get_icon('signal')} Usando API real de BingX")
             # Verificar si las credenciales están configuradas
             try:
                 from config.settings import settings
                 if settings.bingx_api_key == "tu_api_key_aqui":
-                    st.warning("△ Credenciales API no configuradas")
-                    st.markdown("📚 **[Ver guía de configuración](API_REAL_SETUP.md)**")
+                    st.warning(f"{get_icon('triangle')} Credenciales API no configuradas")
+                    st.markdown(f"{get_icon('book')} **[Ver guía de configuración](API_REAL_SETUP.md)**")
                 else:
-                    st.success("✅ Credenciales API configuradas")
+                    st.success(f"{get_icon('success')} Credenciales API configuradas")
             except:
-                st.warning("⚠️ Configuración API no encontrada")
+                st.warning(f"{get_icon('warning')} Configuración API no encontrada")
         else:
             st.info("🎲 Usando datos sintéticos para demo")
         
@@ -206,7 +229,7 @@ def main():
                                              help="Usar EMA lenta como filtro direccional")
                 
                 # Configuración avanzada
-                with st.expander("⚙️ Configuración Avanzada"):
+                with st.expander(f"{get_icon('advanced')} Configuración Avanzada"):
                     min_trend_strength = st.slider(
                         "Fuerza Mínima de Tendencia:", 
                         0.0001, 0.01, 0.001, 0.0001,
@@ -249,13 +272,13 @@ def main():
 
     # Área principal
     if 'results' not in st.session_state:
-        st.info("👈 Configura los parámetros en el panel lateral y haz clic en 'Ejecutar Backtest' para comenzar.")
+        st.info(f"{get_icon('arrow_up')} Configura los parámetros en el panel lateral y haz clic en 'Ejecutar Backtest' para comenzar.")
         
         # Mostrar información del proyecto
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.markdown("""
+            st.markdown(f"""
             **{get_icon('tool')} Características:**
             - Múltiples estrategias de trading
             - Indicadores técnicos avanzados  
@@ -264,7 +287,7 @@ def main():
             """)
         
         with col2:
-            st.markdown("""
+            st.markdown(f"""
             **{get_icon('strategy')} Estrategias Disponibles:**
             - RSI (Relative Strength Index)
             - MACD (Moving Average Convergence Divergence)
@@ -274,7 +297,7 @@ def main():
             """)
         
         with col3:
-            st.markdown("""
+            st.markdown(f"""
             **{get_icon('chart')} Métricas Calculadas:**
             - Retorno total y anualizado
             - Sharpe Ratio
@@ -489,7 +512,7 @@ def show_results():
     st.subheader("🎯 Señales de Trading y Precios")
     
     # Mostrar información de debug
-    with st.expander("🔍 Información del Gráfico"):
+    with st.expander(f"{get_icon('search')} Información del Gráfico"):
         st.write(f"**Estrategia**: {strategy_name}")
         st.write(f"**Símbolo**: {symbol}")
         st.write(f"**Total trades**: {len(results.trades)}")
@@ -690,22 +713,22 @@ def show_trading_signals_chart(results, strategy_name, symbol):
             st.plotly_chart(fig, use_container_width=True)
             
             # Información del gráfico generado
-            with st.expander("📊 Detalles del Gráfico"):
+            with st.expander(f"{get_icon('chart')} Detalles del Gráfico"):
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric(f"{get_icon('chart')} Datos OHLC", len(data))
-                    st.metric("🎯 Total Trades", len(results.trades))
+                    st.metric(f"{get_icon('target')} Total Trades", len(results.trades))
                 with col2:
                     long_trades = len([t for t in results.trades if t.side.lower() == 'long'])
                     short_trades = len([t for t in results.trades if t.side.lower() == 'short'])
-                    st.metric("🟢 Long Trades", long_trades)
-                    st.metric("🔴 Short Trades", short_trades)
+                    st.metric(f"{get_icon('green')} Long Trades", long_trades)
+                    st.metric(f"{get_icon('red')} Short Trades", short_trades)
                 with col3:
-                    st.metric("⏱️ Timeframe", timeframe.upper())
-                    st.metric("📡 Fuente", "Real API" if use_real_data else "Sintético")
+                    st.metric(f"{get_icon('time')} Timeframe", timeframe.upper())
+                    st.metric(f"{get_icon('signal')} Fuente", "Real API" if use_real_data else "Sintético")
                 
                 # Mostrar rango de datos
-                st.info(f"📅 Rango: {data.index[0].strftime('%Y-%m-%d %H:%M')} → {data.index[-1].strftime('%Y-%m-%d %H:%M')}")
+                st.info(f"{get_icon('calendar')} Rango: {data.index[0].strftime('%Y-%m-%d %H:%M')} → {data.index[-1].strftime('%Y-%m-%d %H:%M')}")
         
         # Gráfico de análisis de performance
         st.markdown(f"### {get_icon('trending')} Análisis de Performance")
@@ -715,7 +738,7 @@ def show_trading_signals_chart(results, strategy_name, symbol):
         st.plotly_chart(performance_fig, use_container_width=True)
         
         # Controles adicionales
-        with st.expander("🔧 Controles Avanzados"):
+        with st.expander(f"{get_icon('tool')} Controles Avanzados"):
             st.markdown("**Opciones de Visualización:**")
             
             col1, col2 = st.columns(2)
@@ -745,7 +768,7 @@ def show_trading_signals_chart(results, strategy_name, symbol):
             
     except Exception as e:
         st.error(f"❌ Error generando gráfico: {str(e)}")
-        st.info("💡 Intenta cambiar el timeframe o la fuente de datos")
+        st.info(f"{get_icon('info')} Intenta cambiar el timeframe o la fuente de datos")
         
         # Tabs para diferentes vistas
         tab1, tab2 = st.tabs(["📊 Análisis Detallado", "🎯 Vista Simple"])
@@ -884,7 +907,7 @@ def show_trading_signals_chart(results, strategy_name, symbol):
         st.error(f"❌ Error generando gráfico: {str(e)}")
         
         # Mostrar información de debug
-        with st.expander("🔍 Información de Debug"):
+        with st.expander(f"{get_icon('debug')} Información de Debug"):
             st.code(f"Error: {str(e)}")
             st.write("**Parámetros del error:**")
             st.write(f"- Símbolo: {symbol}")
