@@ -9,11 +9,13 @@ Un backtester profesional para estrategias de trading de criptomonedas con **int
 
 ## ✨ Características Principales
 
-### 🌐 **Interfaz Web Interactiva**
-- **Streamlit Dashboard**: Interfaz moderna y fácil de usar
-- **Configuración Dinámica**: Panel personalizado por estrategia  
-- **Gráficos Interactivos**: Visualizaciones en tiempo real con Plotly
-- **Múltiples Timeframes**: 5min, 15min, 30min, 1h, 4h, 1d, 1w
+### 🖥️ **Interfaz Gráfica**
+- **Streamlit Web App**: Interfaz intuitiva y moderna
+- **Dynamic Configuration**: Panel personalizado por estrategia  
+- **Real-time Charts**: Visualización interactiva con Plotly
+- **Advanced Settings**: Configuración expandible para usuarios avanzados
+- **Trading Signals**: Gráficos detallados con señales Long/Short
+- **Performance Analysis**: Visualización de trades ganadores vs perdedores
 
 ### 🎯 **Estrategias de Trading**
 - **RSI Strategy**: Estrategia basada en índice de fuerza relativa

@@ -16,34 +16,12 @@ from src.backtester.engine import BacktesterEngine
 from src.risk.manager import RiskParameters
 from src.utils.helpers import format_currency, format_percentage
 from src.visualization.charts import ChartGenerator
-from src.visualization.tradingview_charts import create_tradingview_component
-
-def get_icon(name: str) -> str:
-    """Función simple para iconos Unicode limpios"""
-    icons = {
-        "bolt": "⚡",
-        "settings": "⚙",
-        "database": "💾",
-        "chart": "📊",
-        "trending": "📈", 
-        "strategy": "🧠",
-        "shield": "🛡",
-        "play": "▶",
-        "tool": "🔧",
-        "info": "ℹ",
-        "check": "✓",
-        "warning": "⚠",
-        "calendar": "📅",
-        "globe": "🌐",
-        "dollar": "💰"
-    }
-    return icons.get(name, "•")
 
 
 # Configuración de la página
 st.set_page_config(
     page_title="Crypto Trading Backtester",
-    page_icon="◆",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -68,28 +46,28 @@ st.markdown("""
 
 
 def main():
-    st.title(f"{get_icon('bolt')} Crypto Trading Backtester")
+    st.title("🚀 Crypto Trading Backtester")
     st.markdown("### Analiza y optimiza tus estrategias de trading de criptomonedas")
 
     # Sidebar - Configuración
     with st.sidebar:
-        st.header(f"{get_icon('settings')} Configuración")
+        st.header("⚙️ Configuración")
         
         # Configuración de datos
-        st.subheader(f"{get_icon('database')} Fuente de Datos")
+        st.subheader("🔌 Fuente de Datos")
         use_real_data = st.checkbox(
-            f"{get_icon('globe')} Usar Datos Reales de BingX", 
+            "🌐 Usar Datos Reales de BingX", 
             value=False,
             help="Requiere configuración de API keys en archivo .env"
         )
         
         if use_real_data:
-            st.info("▸ Usando API real de BingX")
+            st.info("📡 Usando API real de BingX")
             # Verificar si las credenciales están configuradas
             try:
                 from config.settings import settings
                 if settings.bingx_api_key == "tu_api_key_aqui":
-                    st.warning("△ Credenciales API no configuradas")
+                    st.warning("⚠️ Credenciales API no configuradas")
                     st.markdown("📚 **[Ver guía de configuración](API_REAL_SETUP.md)**")
                 else:
                     st.success("✅ Credenciales API configuradas")
@@ -99,7 +77,7 @@ def main():
             st.info("🎲 Usando datos sintéticos para demo")
         
         # Configuración del activo
-        st.subheader(f"{get_icon('trending')} Activo y Período")
+        st.subheader("📊 Activo y Período")
         symbol = st.selectbox(
             "Símbolo:", 
             ["BTCUSDT", "ETHUSDT", "ADAUSDT", "DOTUSDT", "LINKUSDT", "BNBUSDT", "SOLUSDT", "MATICUSDT"],
@@ -135,7 +113,7 @@ def main():
         )
         
         # Configuración de Estrategia
-        st.subheader(f"{get_icon('strategy')} Estrategia")
+        st.subheader("🎯 Estrategia")
         strategy_type = st.selectbox(
             "Tipo de Estrategia:",
             ["RSI", "MACD", "Bollinger Bands", "EMA Triple", "EMA Golden Cross"]
@@ -143,7 +121,7 @@ def main():
         
         # Panel dinámico de parámetros según estrategia
         st.markdown("---")
-        st.markdown(f"**{get_icon('tool')} Parámetros de la Estrategia:**")
+        st.markdown("**⚙️ Parámetros de la Estrategia:**")
         
         # Parámetros específicos por estrategia
         if strategy_type == "RSI":
@@ -155,8 +133,8 @@ def main():
                     buy_threshold = st.slider("Umbral Compra:", 10, 40, 30)
                 with col2:
                     sell_threshold = st.slider("Umbral Venta:", 60, 90, 70)
-                    st.info(f"{get_icon('info')} Señal Compra: RSI < {buy_threshold} (Sobreventa)")
-                    st.info(f"{get_icon('info')} Señal Venta: RSI > {sell_threshold} (Sobrecompra)")
+                    st.info(f"📊 Señal Compra: RSI < {buy_threshold} (Sobreventa)")
+                    st.info(f"📊 Señal Venta: RSI > {sell_threshold} (Sobrecompra)")
             
         elif strategy_type == "MACD":
             with st.container():
@@ -168,7 +146,7 @@ def main():
                     slow_period = st.slider("EMA Lenta:", 20, 40, 26)
                 with col3:
                     signal_period = st.slider("Señal:", 5, 15, 9)
-                st.info(f"{get_icon('info')} Señales: Cruces de línea MACD con línea de señal")
+                st.info("📊 Señales: Cruces de línea MACD con línea de señal")
             
         elif strategy_type == "Bollinger Bands":
             with st.container():
@@ -178,14 +156,14 @@ def main():
                     bb_period = st.slider("Período BB:", 10, 30, 20)
                 with col2:
                     bb_std = st.slider("Desviación Estándar:", 1.5, 3.0, 2.0, 0.1)
-                st.info(f"{get_icon('info')} Compra: Precio toca banda inferior | Venta: Precio toca banda superior")
+                st.info("📊 Compra: Precio toca banda inferior | Venta: Precio toca banda superior")
             
         elif strategy_type == "EMA Triple":
             with st.container():
                 st.markdown("*Triple EMA con filtros direccionales*")
                 
                 # Configuración de EMAs
-                st.markdown("**◇ Configuración de EMAs:**")
+                st.markdown("**📈 Configuración de EMAs:**")
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     fast_ema = st.number_input("EMA Rápida:", 5, 50, 20, 1)
@@ -230,17 +208,17 @@ def main():
                     fast_ema_gc = st.number_input("EMA Rápida:", 20, 100, 50, 5)
                 with col2:
                     slow_ema_gc = st.number_input("EMA Lenta:", 100, 300, 200, 10)
-                st.info(f"{get_icon('info')} Golden Cross: EMA rápida > EMA lenta | Death Cross: EMA rápida < EMA lenta")
+                st.info("📊 Golden Cross: EMA rápida > EMA lenta | Death Cross: EMA rápida < EMA lenta")
         
         # Gestión de Riesgo
-        st.subheader(f"{get_icon('shield')} Gestión de Riesgo Global")
+        st.subheader("⚖️ Gestión de Riesgo")
         max_position_size = st.slider("Tamaño Máx. Posición (%):", 5, 50, 20) / 100
         stop_loss_pct = st.slider("Stop Loss (%):", 0, 20, 5) / 100
         take_profit_pct = st.slider("Take Profit (%):", 0, 30, 10) / 100
         risk_per_trade = st.slider("Riesgo por Trade (%):", 1, 10, 2) / 100
         
         # Botón de ejecución
-        if st.button(f"{get_icon('play')} Ejecutar Backtest", type="primary", use_container_width=False):
+        if st.button("🚀 Ejecutar Backtest", type="primary", use_container_width=False):
             run_backtest(
                 symbol, start_date, end_date, interval, initial_capital,
                 strategy_type, locals(), max_position_size, stop_loss_pct,
@@ -256,7 +234,7 @@ def main():
         
         with col1:
             st.markdown("""
-            **{get_icon('tool')} Características:**
+            **🔧 Características:**
             - Múltiples estrategias de trading
             - Indicadores técnicos avanzados  
             - Gestión de riesgo integrada
@@ -265,7 +243,7 @@ def main():
         
         with col2:
             st.markdown("""
-            **{get_icon('strategy')} Estrategias Disponibles:**
+            **📊 Estrategias Disponibles:**
             - RSI (Relative Strength Index)
             - MACD (Moving Average Convergence Divergence)
             - Bollinger Bands
@@ -275,7 +253,7 @@ def main():
         
         with col3:
             st.markdown("""
-            **{get_icon('chart')} Métricas Calculadas:**
+            **📈 Métricas Calculadas:**
             - Retorno total y anualizado
             - Sharpe Ratio
             - Maximum Drawdown
@@ -382,7 +360,7 @@ def show_results():
     strategy_name = st.session_state.strategy_name
     symbol = st.session_state.symbol
     
-    st.header(f"{get_icon('chart')} Resultados: {strategy_name}")
+    st.header(f"📊 Resultados: {strategy_name}")
     st.markdown(f"**Símbolo:** {symbol}")
     
     # Métricas principales
@@ -392,7 +370,7 @@ def show_results():
         profit_color = "profit" if results.total_return > 0 else "loss"
         st.markdown(f"""
         <div class="metric-card">
-            <h4>{get_icon('dollar')} Retorno Total</h4>
+            <h4>💰 Retorno Total</h4>
             <h2 class="{profit_color}">{format_currency(results.total_return)}</h2>
             <p class="{profit_color}">({format_percentage(results.total_return_pct)})</p>
         </div>
@@ -401,7 +379,7 @@ def show_results():
     with col2:
         st.markdown(f"""
         <div class="metric-card">
-            <h4>{get_icon('trending')} Sharpe Ratio</h4>
+            <h4>📈 Sharpe Ratio</h4>
             <h2>{results.sharpe_ratio:.2f}</h2>
         </div>
         """, unsafe_allow_html=True)
@@ -429,7 +407,7 @@ def show_results():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader(f"{get_icon('chart')} Curva de Equity")
+        st.subheader("📈 Curva de Equity")
         
         fig_equity = go.Figure()
         fig_equity.add_trace(go.Scatter(
@@ -693,7 +671,7 @@ def show_trading_signals_chart(results, strategy_name, symbol):
             with st.expander("📊 Detalles del Gráfico"):
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric(f"{get_icon('chart')} Datos OHLC", len(data))
+                    st.metric("📈 Datos OHLC", len(data))
                     st.metric("🎯 Total Trades", len(results.trades))
                 with col2:
                     long_trades = len([t for t in results.trades if t.side.lower() == 'long'])
@@ -708,7 +686,7 @@ def show_trading_signals_chart(results, strategy_name, symbol):
                 st.info(f"📅 Rango: {data.index[0].strftime('%Y-%m-%d %H:%M')} → {data.index[-1].strftime('%Y-%m-%d %H:%M')}")
         
         # Gráfico de análisis de performance
-        st.markdown(f"### {get_icon('trending')} Análisis de Performance")
+        st.markdown("### 📈 Análisis de Performance")
         
         chart_generator = ChartGenerator()
         performance_fig = chart_generator.plot_trade_analysis(results, data)

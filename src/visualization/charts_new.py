@@ -49,15 +49,15 @@ class ChartGenerator:
             horizontal_spacing=0.1
         )
         
-        # Configurar colores del tema claro
+        # Configurar colores del tema
         colors = {
-            'background': '#FFFFFF',
-            'paper': '#FAFAFA', 
-            'text': '#2E2E2E',
-            'grid': '#E0E0E0',
-            'profit': '#2E7D32',
-            'loss': '#D32F2F',
-            'neutral': '#F57C00'
+            'background': '#0E1117',
+            'paper': '#1A1D23', 
+            'text': '#FAFAFA',
+            'grid': '#2A2E39',
+            'profit': '#4CAF50',
+            'loss': '#F44336',
+            'neutral': '#FF9800'
         }
         
         # 1. Equity Curve (gráfico principal)
@@ -85,7 +85,7 @@ class ChartGenerator:
             ), row=1, col=1)
             
             # Línea de break-even
-            fig.add_hline(y=0, line_dash="dash", line_color="rgba(46,46,46,0.5)", 
+            fig.add_hline(y=0, line_dash="dash", line_color="rgba(255,255,255,0.5)", 
                          line_width=1, row=1, col=1)
         
         # 2. Distribución de P&L por trade
@@ -161,8 +161,8 @@ class ChartGenerator:
                 y=1.02,
                 xanchor="center",
                 x=0.5,
-                bgcolor="rgba(255,255,255,0.95)",
-                bordercolor="rgba(46,46,46,0.2)",
+                bgcolor="rgba(26,29,35,0.8)",
+                bordercolor="rgba(250,250,250,0.2)",
                 borderwidth=1
             ),
             hovermode='closest'

@@ -28,7 +28,9 @@ class EMAStrategy(BaseStrategy):
     def __init__(self, symbol: str, fast_ema: int = 20, medium_ema: int = 55, 
                  slow_ema: int = 200, min_trend_strength: float = 0.001,
                  allow_longs: bool = True, allow_shorts: bool = False,
-                 trend_filter: bool = True, **kwargs):
+                 trend_filter: bool = True, confirmation_candles: int = 2,
+                 volume_filter: bool = False, min_ema_distance: float = 0.005,
+                 exit_on_cross: bool = True, trailing_stop: bool = False, **kwargs):
         super().__init__(symbol, **kwargs)
         self.fast_ema = fast_ema
         self.medium_ema = medium_ema
@@ -37,6 +39,11 @@ class EMAStrategy(BaseStrategy):
         self.allow_longs = allow_longs
         self.allow_shorts = allow_shorts
         self.trend_filter = trend_filter  # Si usar EMA 200 como filtro
+        self.confirmation_candles = confirmation_candles  # Velas de confirmación
+        self.volume_filter = volume_filter  # Filtro de volumen
+        self.min_ema_distance = min_ema_distance  # Distancia mínima entre EMAs
+        self.exit_on_cross = exit_on_cross  # Salir en cruce contrario
+        self.trailing_stop = trailing_stop  # Usar trailing stop
         
     def generate_signals(self, data: pd.DataFrame) -> List[TradeSignal]:
         """Genera señales basadas en EMAs múltiples"""
